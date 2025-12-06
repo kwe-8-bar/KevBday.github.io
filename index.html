@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Happy Birthday, Kirenga</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.0/firebase-storage-compat.js"></script>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --black: #0a0a0a;
+      --yellow: #f4c430;
+      --red: #c41e3a;
+      --gold: #d4af37;
+      --cream: #faf8f3;
+    }
+
+    body {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+      color: var(--cream);
+      min-height: 100vh;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(circle at 20% 30%, rgba(244, 196, 48, 0.03) 0%, transparent 50%),
+        radial-gradient(circle at 80% 70%, rgba(196, 30, 58, 0.03) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 4rem;
+      border-bottom: 1px solid rgba(244, 196, 48, 0.2);
+      padding-bottom: 2rem;
+    }
+
+    .ornament {
+      font-size: 2rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    }
+
+    .title-with-flowers {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.5rem;
+    }
+
+    h1 {
+      font-size: 3.5rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: var(--yellow);
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 30px rgba(244, 196, 48, 0.4);
+    }
+
+    .flower-left,
+    .flower-right {
+      font-size: 3rem;
+      filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.6));
+      animation: floatFlower 3s ease-in-out infinite;
+    }
+
+    .flower-left {
+      animation-delay: 0s;
+    }
+
+    .flower-right {
+      animation-delay: 1.5s;
+    }
+
+    @keyframes floatFlower {
+      0%, 100% {
+        transform: translateY(0) rotate(-5deg);
+      }
+      50% {
+        transform: translateY(-10px) rotate(5deg);
+      }
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #d4d4d4;
+      font-style: italic;
+      letter-spacing: 0.05em;
+      margin-top: 1rem;
+    }
+
+    .mode-selector {
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+
+    .mode-btn {
+      padding: 0.8rem 2rem;
+      background: transparent;
+      border: 2px solid var(--gold);
+      color: var(--gold);
+      font-size: 1rem;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+    }
+
+    .mode-btn:hover {
+      background: var(--gold);
+      color: var(--black);
+      box-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+    }
+
+    .mode-btn.active {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      color: var(--black);
+      box-shadow: 0 0 30px rgba(244, 196, 48, 0.6);
+    }
+
+    .password-section {
+      max-width: 500px;
+      margin: 2rem auto;
+      padding: 2rem;
+      background: rgba(10, 10, 10, 0.8);
+      border: 1px solid rgba(244, 196, 48, 0.3);
+      border-radius: 4px;
+      display: none;
+    }
+
+    .password-section.show {
+      display: block;
+    }
+
+    .password-section h3 {
+      font-size: 1.3rem;
+      color: var(--yellow);
+      margin-bottom: 1rem;
+      font-weight: 400;
+      text-align: center;
+      letter-spacing: 0.08em;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(244, 196, 48, 0.3);
+      color: var(--cream);
+      font-size: 1rem;
+      font-family: inherit;
+      margin-bottom: 1rem;
+    }
+
+    .password-input:focus {
+      outline: none;
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px rgba(244, 196, 48, 0.3);
+    }
+
+    .password-error {
+      color: var(--red);
+      font-size: 0.9rem;
+      text-align: center;
+      margin-top: 0.5rem;
+      display: none;
+    }
+
+    .password-error.show {
+      display: block;
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 3rem;
+      margin-top: 3rem;
+    }
+
+    @media (max-width: 968px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .gallery-section {
+      background: rgba(10, 10, 10, 0.6);
+      border: 1px solid rgba(244, 196, 48, 0.2);
+      padding: 2rem;
+      border-radius: 4px;
+    }
+
+    .section-title {
+      font-size: 1.5rem;
+      color: var(--yellow);
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-align: center;
+      border-bottom: 1px solid rgba(244, 196, 48, 0.2);
+      padding-bottom: 1rem;
+    }
+
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .photo-slot {
+      position: relative;
+      aspect-ratio: 1;
+      border: 2px solid rgba(244, 196, 48, 0.3);
+      border-radius: 2px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .photo-slot:hover {
+      transform: translateY(-5px);
+      border-color: var(--yellow);
+      box-shadow: 0 10px 40px rgba(244, 196, 48, 0.3);
+    }
+
+    .photo-slot img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .photo-slot:hover img {
+      transform: scale(1.05);
+    }
+
+    .photo-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+      padding: 1rem;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    .photo-number {
+      color: var(--gold);
+      font-weight: 600;
+    }
+
+    .photo-status {
+      color: #aaa;
+      font-size: 0.75rem;
+      margin-top: 0.3rem;
+    }
+
+    .photo-status.locked {
+      color: var(--red);
+    }
+
+    .photo-status.available {
+      color: var(--yellow);
+    }
+
+    .lock-badge {
+      position: absolute;
+      top: 0.8rem;
+      right: 0.8rem;
+      background: var(--red);
+      color: white;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      box-shadow: 0 0 20px rgba(196, 30, 58, 0.8);
+    }
+
+    .message-section {
+      background: rgba(10, 10, 10, 0.6);
+      border: 1px solid rgba(244, 196, 48, 0.2);
+      padding: 2rem;
+      border-radius: 4px;
+      height: fit-content;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      color: var(--gold);
+      font-size: 0.9rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .form-group input[type="text"],
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(244, 196, 48, 0.3);
+      color: var(--cream);
+      font-size: 0.95rem;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    .form-group textarea {
+      min-height: 150px;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--yellow);
+      box-shadow: 0 0 15px rgba(244, 196, 48, 0.2);
+    }
+
+    .form-hint {
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 0.4rem;
+      font-style: italic;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input-wrapper input[type="file"] {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: block;
+      padding: 0.8rem;
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px dashed rgba(244, 196, 48, 0.4);
+      color: var(--gold);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .file-input-label:hover {
+      border-color: var(--yellow);
+      background: rgba(244, 196, 48, 0.05);
+    }
+
+    .selected-info {
+      padding: 1rem;
+      background: rgba(244, 196, 48, 0.1);
+      border-left: 3px solid var(--yellow);
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--cream);
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      background: var(--yellow);
+      border: none;
+      color: var(--black);
+      font-size: 1rem;
+      font-family: inherit;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      width: 100%;
+      font-weight: 600;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: var(--gold);
+      box-shadow: 0 0 30px rgba(244, 196, 48, 0.5);
+      transform: translateY(-2px);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 1rem;
+      margin-top: 1rem;
+      border-left: 3px solid var(--red);
+      background: rgba(196, 30, 58, 0.1);
+      color: var(--red);
+      font-size: 0.9rem;
+      display: none;
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+      border: 2px solid var(--gold);
+      padding: 2.5rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      position: relative;
+      box-shadow: 0 0 60px rgba(244, 196, 48, 0.4);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: transparent;
+      border: none;
+      color: var(--cream);
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .modal-close:hover {
+      color: var(--red);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      color: var(--yellow);
+      margin-bottom: 1.5rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-align: center;
+    }
+
+    .message-content {
+      border-top: 1px solid rgba(244, 196, 48, 0.2);
+      padding-top: 1.5rem;
+    }
+
+    .message-from {
+      font-size: 1.1rem;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      letter-spacing: 0.05em;
+    }
+
+    .message-text {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: var(--cream);
+      white-space: pre-wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .message-photo {
+      margin-top: 1.5rem;
+      border: 2px solid rgba(244, 196, 48, 0.3);
+      overflow: hidden;
+    }
+
+    .message-photo img {
+      width: 100%;
+      display: block;
+    }
+
+    .unlock-section {
+      text-align: center;
+      padding: 2rem 0;
+    }
+
+    .unlock-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .unlock-text {
+      font-size: 1.1rem;
+      color: #aaa;
+      margin-bottom: 1.5rem;
+    }
+
+    .loading {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .loading.hidden {
+      display: none;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 3px solid rgba(244, 196, 48, 0.2);
+      border-top-color: var(--yellow);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      color: var(--gold);
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 4rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(244, 196, 48, 0.2);
+      color: #888;
+      font-size: 0.9rem;
+      font-style: italic;
+    }
+
+    @media (max-width: 768px) {
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .title-with-flowers {
+        gap: 1rem;
+      }
+
+      .flower-left,
+      .flower-right {
+        font-size: 2rem;
+      }
+
+      .gallery-grid {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 1rem;
+      }
+
+      .container {
+        padding: 2rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Loading memories...</div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div class="ornament">✦ ❖ ✦</div>
+      <div class="title-with-flowers">
+        <span class="flower-left">🌹</span>
+        <h1>KIRENGA</h1>
+        <span class="flower-right">🌹</span>
+      </div>
+      
+      <p class="subtitle">Thirteen ways to say happy birthday, all in one place.</p>
+      
+      <div class="mode-selector">
+        <button class="mode-btn" id="friendModeBtn">I'm a Friend</button>
+        <button class="mode-btn" id="kirengaModeBtn">I'm Kirenga</button>
+      </div>
+
+      <div class="password-section" id="passwordSection">
+        <h3>Enter Your Birthday Password</h3>
+        <input type="password" class="password-input" id="passwordInput" placeholder="Enter password">
+        <button class="btn" id="passwordSubmit">Unlock Messages</button>
+        <div class="password-error" id="passwordError">Incorrect password. Please try again.</div>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <section class="gallery-section">
+        <h2 class="section-title">Photo Gallery</h2>
+        <div class="gallery-grid" id="gallery"></div>
+      </section>
+
+      <aside class="message-section">
+        <h2 class="section-title">Leave Your Message</h2>
+        
+        <div class="selected-info" id="selectedInfo">
+          Click on an available photo to leave your birthday message for Kirenga
+        </div>
+
+        <form id="messageForm">
+          <input type="hidden" id="selectedSlot">
+          
+          <div class="form-group">
+            <label>Your Name</label>
+            <input type="text" id="friendName" required placeholder="Enter your name">
+          </div>
+
+          <div class="form-group">
+            <label>Your Birthday Message</label>
+            <textarea id="friendMessage" required placeholder="Write something special for Kirenga..."></textarea>
+            <div class="form-hint">This message will be locked to the photo you selected</div>
+          </div>
+
+          <div class="form-group">
+            <label>Add Your Photo (Optional)</label>
+            <div class="file-input-wrapper">
+              <input type="file" id="friendPhoto" accept="image/*">
+              <label for="friendPhoto" class="file-input-label" id="fileLabel">
+                Choose a photo to include with your message
+              </label>
+            </div>
+          </div>
+
+          <button type="submit" class="btn" id="submitBtn">Lock My Message</button>
+          <div class="alert" id="alert"></div>
+        </form>
+      </aside>
+    </div>
+
+    <footer>
+      Honoring Kirenga's big day ✦ Thirteen messages from the people who care
+    </footer>
+  </div>
+
+  <div class="modal-backdrop" id="modal">
+    <div class="modal">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyByVun3dFHl5Y9cJZwvbCSo0kGcR1azqJY",
+      authDomain: "kevbday-38075.firebaseapp.com",
+      projectId: "kevbday-38075",
+      storageBucket: "kevbday-38075.firebasestorage.app",
+      messagingSenderId: "702350441972",
+      appId: "1:702350441972:web:fcfcbe2a9b659a02270da1",
+      measurementId: "G-9Y4CF0ST1V"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const BIRTHDAY_PASSWORD = "121200";
+
+    const PHOTOS = [
+      "Kev Bday Photos/Kev1-min.jpeg",
+      "Kev Bday Photos/Kev2-min.jpeg",
+      "Kev Bday Photos/Kev3-min.jpeg",
+      "Kev Bday Photos/Kev4.jpeg",
+      "Kev Bday Photos/Kev5.JPEG",
+      "Kev Bday Photos/Kev6-min.JPEG",
+      "Kev Bday Photos/Kev7-min.jpeg",
+      "Kev Bday Photos/Kev8-min.jpeg",
+      "Kev Bday Photos/Kev9-min.jpeg",
+      "Kev Bday Photos/Kev10.jpeg",
+      "Kev Bday Photos/Kev11.jpeg",
+      "Kev Bday Photos/Kev12.jpeg",
+      "Kev Bday Photos/Kev13.jpeg"
+    ];
+
+    let isBirthdayMode = false;
+    let slots = {};
+    let selectedSlotId = null;
+
+    const loading = document.getElementById('loading');
+    const friendModeBtn = document.getElementById('friendModeBtn');
+    const kirengaModeBtn = document.getElementById('kirengaModeBtn');
+    const passwordSection = document.getElementById('passwordSection');
+    const passwordInput = document.getElementById('passwordInput');
+    const passwordSubmit = document.getElementById('passwordSubmit');
+    const passwordError = document.getElementById('passwordError');
+    const gallery = document.getElementById('gallery');
+    const selectedInfo = document.getElementById('selectedInfo');
+    const messageForm = document.getElementById('messageForm');
+    const friendName = document.getElementById('friendName');
+    const friendMessage = document.getElementById('friendMessage');
+    const friendPhoto = document.getElementById('friendPhoto');
+    const fileLabel = document.getElementById('fileLabel');
+    const submitBtn = document.getElementById('submitBtn');
+    const alertBox = document.getElementById('alert');
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modalContent');
+    const modalClose = document.getElementById('modalClose');
+
+    async function init() {
+      try {
+        await loadSlots();
+        renderGallery();
+      } catch (e) {
+        console.error(e);
+      } finally {
+        loading.classList.add('hidden');
+      }
+    }
+
+    async function loadSlots() {
+      const snapshot = await db.collection('slots').get();
+      slots = {};
+      snapshot.forEach(doc => {
+        slots[doc.id] = doc.data();
+      });
+    }
+
+    function renderGallery() {
+      gallery.innerHTML = '';
+
+      for (let i = 1; i <= 13; i++) {
+        const slotId = `slot${i}`;
+        const slotData = slots[slotId] || {};
+        const isLocked = slotData.isLocked || slotData.message;
+
+        const photoSlot = document.createElement('div');
+        photoSlot.className = 'photo-slot';
+
+        const img = document.createElement('img');
+        img.alt = `Photo ${i}`;
+        img.style.opacity = '0';
+
+        const storageRef = storage.ref(PHOTOS[i - 1]);
+        storageRef.getDownloadURL()
+          .then(url => {
+            img.src = url;
+            img.style.opacity = '1';
+          })
+          .catch(err => {
+            console.error('Error loading image', err);
+          });
+
+        photoSlot.appendChild(img);
+
+        if (isLocked) {
+          const lockBadge = document.createElement('div');
+          lockBadge.className = 'lock-badge';
+          lockBadge.textContent = '🔒';
+          photoSlot.appendChild(lockBadge);
+        }
+
+        const overlay = document.createElement('div');
+        overlay.className = 'photo-overlay';
+        overlay.innerHTML = `
+          <div class="photo-number">Photo ${i}</div>
+          <div class="photo-status ${isLocked ? 'locked' : 'available'}">
+            ${isLocked ? `Locked${slotData.friendName ? ' by ' + slotData.friendName : ''}` : 'Available'}
+          </div>
+        `;
+        photoSlot.appendChild(overlay);
+
+        photoSlot.addEventListener('click', () => handleSlotClick(slotId, slotData));
+
+        gallery.appendChild(photoSlot);
+      }
+    }
+
+    function handleSlotClick(slotId, slotData) {
+      const isLocked = slotData.isLocked || slotData.message;
+      
+      if (!isLocked) {
+        selectedSlotId = slotId;
+        document.getElementById('selectedSlot').value = slotId;
+        const slotNumber = slotData.slotNumber || slotId.replace('slot', '');
+        selectedInfo.textContent = `Photo ${slotNumber} selected. Write your message below.`;
+        selectedInfo.style.background = 'rgba(244, 196, 48, 0.2)';
+        selectedInfo.style.borderColor = 'var(--yellow)';
+      } else {
+        showModal(slotData);
+      }
+    }
+
+    function showModal(slotData) {
+      if (isBirthdayMode) {
+        showMessage(slotData);
+      } else {
+        showUnlockPrompt(slotData);
+      }
+    }
+
+    function showUnlockPrompt(slotData) {
+      modalContent.innerHTML = `
+        <div class="unlock-section">
+          <div class="unlock-icon">🔒</div>
+          <h3 class="modal-title">Locked Message</h3>
+          <p class="unlock-text">From ${slotData.friendName || 'a friend'}</p>
+          <input type="password" class="password-input" id="modalPassword" placeholder="Enter birthday password">
+          <button class="btn" id="modalUnlock">Unlock</button>
+        </div>
+      `;
+      
+      modal.classList.add('show');
+      
+      document.getElementById('modalUnlock').addEventListener('click', () => {
+        const pwd = document.getElementById('modalPassword').value;
+        if (pwd === BIRTHDAY_PASSWORD) {
+          showMessage(slotData);
+        } else {
+          alertBox.textContent = 'Incorrect password';
+          alertBox.classList.add('show');
+        }
+      });
+    }
+
+    function showMessage(slotData) {
+      modalContent.innerHTML = `
+        <h3 class="modal-title">Message Unlocked</h3>
+        <div class="message-content">
+          <div class="message-from">From ${slotData.friendName || 'a friend'}</div>
+          <div class="message-text">${slotData.message || 'No message available'}</div>
+          ${slotData.friendPhotoUrl ? `
+            <div class="message-photo">
+              <img src="${slotData.friendPhotoUrl}" alt="Friend's photo">
+            </div>
+          ` : ''}
+        </div>
+      `;
+      modal.classList.add('show');
+    }
+
+    friendModeBtn.addEventListener('click', () => {
+      friendModeBtn.classList.add('active');
+      kirengaModeBtn.classList.remove('active');
+      passwordSection.classList.remove('show');
+      isBirthdayMode = false;
+    });
+
+    kirengaModeBtn.addEventListener('click', () => {
+      kirengaModeBtn.classList.add('active');
+      friendModeBtn.classList.remove('active');
+      passwordSection.classList.add('show');
+      passwordInput.focus();
+    });
+
+    passwordSubmit.addEventListener('click', () => {
+      if (passwordInput.value === BIRTHDAY_PASSWORD) {
+        isBirthdayMode = true;
+        passwordSection.classList.remove('show');
+        passwordError.classList.remove('show');
+        alertBox.textContent = 'All messages unlocked! Click any photo to read.';
+        alertBox.style.background = 'rgba(244, 196, 48, 0.2)';
+        alertBox.style.borderColor = 'var(--yellow)';
+        alertBox.style.color = 'var(--yellow)';
+        alertBox.classList.add('show');
+      } else {
+        passwordError.classList.add('show');
+      }
+    });
+
+    passwordInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') passwordSubmit.click();
+    });
+
+    friendPhoto.addEventListener('change', (e) => {
+      if (e.target.files.length > 0) {
+        fileLabel.textContent = e.target.files[0].name;
+      } else {
+        fileLabel.textContent = 'Choose a photo to include with your message';
+      }
+    });
+
+    messageForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      if (!selectedSlotId) {
+        alertBox.textContent = 'Please select a photo first';
+        alertBox.classList.add('show');
+        return;
+      }
+
+      const name = friendName.value.trim();
+      const message = friendMessage.value.trim();
+      
+      if (!name || !message) {
+        alertBox.textContent = 'Please fill in all required fields';
+        alertBox.classList.add('show');
+        return;
+      }
+
+      const slotRef = db.collection('slots').doc(selectedSlotId);
+      const slotDoc = await slotRef.get();
+      const slotData = slotDoc.exists ? slotDoc.data() : {};
+      
+      if (slotData.isLocked || slotData.message) {
+        alertBox.textContent = 'This photo has already been claimed';
+        alertBox.classList.add('show');
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+
+      try {
+        let photoUrl = null;
+        const file = friendPhoto.files[0];
+        
+        if (file) {
+          const photoRef = storage.ref().child(`friendPhotos/${selectedSlotId}-${Date.now()}-${file.name}`);
+          await photoRef.put(file);
+          photoUrl = await photoRef.getDownloadURL();
+        }
+
+        const slotNumber =
+          slotData.slotNumber || parseInt(selectedSlotId.replace('slot', ''), 10);
+
+        await slotRef.set(
+          {
+            slotNumber,
+            isLocked: true,
+            friendName: name,
+            message: message,
+            friendPhotoUrl: photoUrl
+          },
+          { merge: true }
+        );
+
+        messageForm.reset();
+        selectedSlotId = null;
+        selectedInfo.textContent = 'Message locked successfully! Thank you ✨';
+        selectedInfo.style.background = 'rgba(244, 196, 48, 0.2)';
+        selectedInfo.style.borderColor = 'var(--yellow)';
+        fileLabel.textContent = 'Choose a photo to include with your message';
+
+        await loadSlots();
+        renderGallery();
+      } catch (error) {
+        console.error(error);
+        alertBox.textContent = 'Error saving message. Please try again.';
+        alertBox.classList.add('show');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Lock My Message';
+      }
+    });
+
+    modalClose.addEventListener('click', () => {
+      modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>
